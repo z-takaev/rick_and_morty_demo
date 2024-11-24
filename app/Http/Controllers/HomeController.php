@@ -3,26 +3,28 @@
 namespace App\Http\Controllers;
 
 use App\Models\Character;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\View\View;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 
 class HomeController extends Controller
 {
-    public function __invoke(): View
+    public function __invoke()
     {
-        $morty = Http::get('https://rickandmortyapi.com/api/character/3')->json();
+        // $morty = Http::get('https://rickandmortyapi.com/api/character/4')->json();
 
-        Character::create([
-            'name' => $morty['name'],
-            'status' => $morty['status'],
-            'gender' => $morty['gender'],
-            'image' => $morty['image'],
-        ]);
+        // Character::create([
+        //     'name' => $morty['name'],
+        //     'status' => $morty['status'],
+        //     'gender' => $morty['gender'],
+        //     'image' => $morty['image'],
+        // ]);
 
-        // $morty = Character::firstOrFail();
-        // $morty->update(['name' => 'Morty Smith']);
+        $characters = Character::all();
 
-        return view('home');
+        $pdf = Pdf::loadView('pdf.characters', compact('characters'));
+        $pdf->set_option('isRemoteEnabled', true);
+        return $pdf->download('characters.pdf');
+
+        // return view('home');
     }
 }
