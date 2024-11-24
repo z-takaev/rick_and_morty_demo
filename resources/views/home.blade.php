@@ -7,6 +7,9 @@
         <title>Rick and Morty</title>
     </head>
     <body>
-
+        <form action="{{ route('pdf.characters') }}" method="POST">
+            @csrf
+            <button type="submit">Скачать pdf</button>
+        </form>
     </body>
 </html>
