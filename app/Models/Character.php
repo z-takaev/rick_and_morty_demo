@@ -7,22 +7,23 @@ use Illuminate\Database\Eloquent\Model;
 
 class Character extends Model
 {
-    use TranslatableFields;
+    // use TranslatableFields;
 
     protected $fillable = [
-        'name', 'status',
-        'gender', 'image',
-        'translations',
+        'name', 'description',
+        'status', 'gender',
+        'image',
     ];
 
     protected $casts = [
-        'translations' => 'array',
+        'name' => 'array',
+        'description' => 'array',
     ];
 
-    protected function translationFields(): array
-    {
-        return ['name'];
-    }
+    // protected function translationFields(): array
+    // {
+    //     return ['name'];
+    // }
 
     protected static function boot()
     {
