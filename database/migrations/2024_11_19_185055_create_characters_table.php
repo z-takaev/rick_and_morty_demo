@@ -12,12 +12,10 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
 
-            $table->json('name');
-            $table->json('description')->nullable();
-
-            $table->string('status')->nullable();
-            $table->string('gender')->nullable();
-            $table->string('image')->nullable();
+            $table->string('name');
+            $table->string('status');
+            $table->string('gender');
+            $table->string('image');
         });
     }
 

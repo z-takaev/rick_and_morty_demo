@@ -10,9 +10,8 @@ class Character extends Model
     // use TranslatableFields;
 
     protected $fillable = [
-        'name', 'description',
+        'name', 'image',
         'status', 'gender',
-        'image',
     ];
 
     protected $casts = [
