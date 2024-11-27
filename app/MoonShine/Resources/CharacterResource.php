@@ -8,6 +8,7 @@ use Closure;
 use MoonShine\Fields\ID;
 use App\Models\Character;
 use MoonShine\Fields\Text;
+use MoonShine\MoonShineUI;
 use MoonShine\Fields\Preview;
 use MoonShine\Fields\Checkbox;
 use MoonShine\Decorations\Block;
@@ -16,7 +17,9 @@ use MoonShine\Resources\ModelResource;
 use Illuminate\Database\Eloquent\Model;
 use App\MoonShine\Traits\HasTranslation;
 use Illuminate\Database\Eloquent\Builder;
+use MoonShine\ActionButtons\ActionButton;
 use Illuminate\View\ComponentAttributeBag;
+use MoonShine\Components\Layout\Flash;
 
 class CharacterResource extends ModelResource
 {
@@ -102,4 +105,28 @@ class CharacterResource extends ModelResource
         return $item;
     }
 
+    public function formButtons(): array
+    {
+        return [
+            ActionButton::make('Сохранить и обновить поле')
+            ->method('saveAndUpdateField')
+            ->primary()
+            ->icon('heroicons.language')
+        ];
+    }
+
+    public function saveAndUpdateField()
+    {
+        if ($this->isNowOnCreateForm()) {
+            $this->getModel()->status = 'Dead';
+            $this->getModel()->save();
+        } else {
+            $this->getItem()->status = 'Dead';
+            $this->getItem()->save();
+        }
+
+        Flash::make(key: 'alert', type: 'success', withToast: true, removable: true);
+
+        return back()->with('alert', 'Поле успешно сохранено и обновлено');
+    }
 }

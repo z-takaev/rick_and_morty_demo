@@ -14,10 +14,10 @@ class Character extends Model
         'status', 'gender',
     ];
 
-    protected $casts = [
-        'name' => 'array',
-        'description' => 'array',
-    ];
+    // protected $casts = [
+    //     'name' => 'array',
+    //     'description' => 'array',
+    // ];
 
     // protected function translationFields(): array
     // {
