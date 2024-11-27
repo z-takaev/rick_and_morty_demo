@@ -4,28 +4,40 @@ declare(strict_types=1);
 
 namespace App\MoonShine\Resources;
 
+use Closure;
 use MoonShine\Fields\ID;
 use App\Models\Character;
 use MoonShine\Fields\Text;
 use MoonShine\Fields\Preview;
-use MoonShine\Components\Modal;
+use MoonShine\Fields\Checkbox;
 use MoonShine\Decorations\Block;
+use MoonShine\QueryTags\QueryTag;
 use MoonShine\Resources\ModelResource;
-
 use Illuminate\Database\Eloquent\Model;
-use MoonShine\ActionButtons\ActionButton;
-use MoonShine\Contracts\MoonShineRenderable;
-use MoonShine\Fields\Select;
+use App\MoonShine\Traits\HasTranslation;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\View\ComponentAttributeBag;
 
 class CharacterResource extends ModelResource
 {
+    use HasTranslation;
+
     protected string $model = Character::class;
 
     protected string $title = 'Персонажи';
 
+    protected bool $columnSelection = true;
+
+    protected bool $stickyTable = true;
+
     public function getActiveActions(): array
     {
-        return ['view', 'delete'];
+        return ['view', 'delete', 'update'];
+    }
+
+    public function translationFields(): array
+    {
+        return ['name', 'gender', 'status'];
     }
 
     public function fields(): array
@@ -38,6 +50,8 @@ class CharacterResource extends ModelResource
                 Text::make('Имя', 'name'),
                 Text::make('Пол', 'gender'),
                 Text::make('Статус', 'status'),
+
+                Checkbox::make('Перевести', 'translate'),
             ]),
         ];
     }
@@ -47,34 +61,45 @@ class CharacterResource extends ModelResource
         return [];
     }
 
-    public function pageComponents(): array
+    public function trAttributes(): Closure
+    {
+        return function (
+            Model $item,
+            int $row,
+            ComponentAttributeBag $attr
+        ): ComponentAttributeBag {
+
+            $class = match ($item->status) {
+                'Dead' => 'bgc-red',
+                'Alive' => 'bgc-green',
+                default => 'bgc-gray',
+            };
+
+            $attr->setAttributes([
+                'class' => $class
+            ]);
+
+            return $attr;
+        };
+    }
+
+    public function queryTags(): array
     {
         return [
-            Modal::make(
-                'Изменение статуса',
-                fn() => form()
-                    ->action(route('moonshine.characters.status.update', $this->item))
-                    ->fields([
-                        Select::make('Статус', 'status')
-                            ->options([
-                                'Alive' => 'Живой',
-                                'Dead' => 'Мертвый',
-                                'Unknown' => 'Неизвестно',
-                            ])
-                    ])
-                    ->fill(['status' => $this->item->status])
+            QueryTag::make(
+                'Живые персонажи',
+                fn(Builder $query) => $query->where('status', 'Alive')
             )
-            ->name('status-modal'),
         ];
     }
 
-    public function detailButtons(): array
+    protected function beforeUpdating(Model $item): Model
     {
-        return [
-            ActionButton::make(
-                label: 'Изменить статус',
-                url: '#',
-            )->toggleModal('status-modal')
-        ];
+        if ($this->needTranslate()) {
+            return $this->translate($item);
+        }
+
+        return $item;
     }
+
 }
