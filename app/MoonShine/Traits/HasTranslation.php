@@ -10,16 +10,16 @@ trait HasTranslation
 
     abstract public function translationFields(): array;
 
-    public function prepareForValidation(): void
-    {
-        $this->hasTranslate = request()?->boolean('translate');
+    // public function prepareForValidation(): void
+    // {
+    //     $this->hasTranslate = request()?->boolean('translate');
 
-        request()?->request->remove('translate');
-    }
+    //     request()?->request->remove('translate');
+    // }
 
     protected function needTranslate(): bool
     {
-        return $this->hasTranslate;
+        return request()?->boolean('translate');
     }
 
     protected function translate(Model $model): Model

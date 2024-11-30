@@ -9,17 +9,22 @@ use MoonShine\Fields\ID;
 use App\Models\Character;
 use MoonShine\Fields\Text;
 use MoonShine\MoonShineUI;
+use MoonShine\Enums\JsEvent;
 use MoonShine\Fields\Preview;
 use MoonShine\Fields\Checkbox;
+use MoonShine\MoonShineRequest;
+use MoonShine\Support\AlpineJs;
 use MoonShine\Decorations\Block;
 use MoonShine\QueryTags\QueryTag;
+use MoonShine\Components\FormBuilder;
+use MoonShine\Components\Layout\Flash;
 use MoonShine\Resources\ModelResource;
 use Illuminate\Database\Eloquent\Model;
 use App\MoonShine\Traits\HasTranslation;
 use Illuminate\Database\Eloquent\Builder;
 use MoonShine\ActionButtons\ActionButton;
 use Illuminate\View\ComponentAttributeBag;
-use MoonShine\Components\Layout\Flash;
+use MoonShine\Contracts\MoonShineRenderable;
 
 class CharacterResource extends ModelResource
 {
@@ -54,7 +59,9 @@ class CharacterResource extends ModelResource
                 Text::make('Пол', 'gender'),
                 Text::make('Статус', 'status'),
 
-                Checkbox::make('Перевести', 'translate'),
+                Checkbox::make('Перевести', 'translate')->onApply(function (Model $item) {
+                    return $item;
+                }),
             ]),
         ];
     }
@@ -104,6 +111,52 @@ class CharacterResource extends ModelResource
 
         return $item;
     }
+
+    public function indexButtons(): array
+    {
+        return [
+            ActionButton::make('')
+                ->primary()
+                ->icon('heroicons.shield-check')
+                ->inModal(
+                    title: 'Сохранить и обновить поле',
+                    content: function($item) {
+                        return FormBuilder::make(
+                            action: route('moonshine.characters.name.update', $item->getKey()),
+                            method: 'post'
+                        )
+                            ->fields([
+                                Text::make('Имя', 'name'),
+                            ])
+                            ->fill([
+                                'name' => $item->name
+                            ])
+                            ->name('change-name-form')
+                            ->async(asyncEvents: [
+                                AlpineJs::event(JsEvent::TABLE_UPDATED, 'index-table')
+                            ]);
+                    }
+                ),
+
+            ActionButton::make('Обновить таблицу')
+                ->dispatchEvent(AlpineJs::event(JsEvent::TABLE_UPDATED, 'index-table'))
+        ];
+    }
+
+    public function modifyListComponent(MoonShineRenderable $component): MoonShineRenderable
+    {
+        return parent::modifyListComponent($component)->async();
+    }
+
+    public function test(MoonShineRequest $request)
+    {
+        $character = $this->getItem();
+
+        Flash::make(key: 'alert', type: 'success', withToast: true, removable: true);
+
+        return back()->with('alert', $character->name);
+    }
+
 
     public function formButtons(): array
     {

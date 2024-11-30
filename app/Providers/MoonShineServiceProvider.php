@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\MoonShine\Pages\CharacterListApiPage;
 use App\MoonShine\Resources\CharacterResource;
-use MoonShine\Components\Layout\Menu;
 use MoonShine\Providers\MoonShineApplicationServiceProvider;
 use MoonShine\Menu\MenuGroup;
 use MoonShine\Menu\MenuItem;
@@ -39,7 +39,12 @@ class MoonShineServiceProvider extends MoonShineApplicationServiceProvider
     protected function menu(): array
     {
         return [
-            MenuItem::make('Персонажи', new CharacterResource()),
+            MenuItem::make(
+                'Персонажи из api',
+                CharacterListApiPage::make()->setTitle('Список персонажей из api')
+            ),
+
+            MenuItem::make('Персонажи из бд', new CharacterResource()),
 
             MenuGroup::make(static fn() => __('moonshine::ui.resource.system'), [
                 MenuItem::make(
